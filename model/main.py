@@ -29,12 +29,11 @@ from model.model import WordLSTM
 # model.load_state_dict(torch.load('/Users/puayhiang/dev/music-generation/model/model/trained_model.h5', map_location='cpu'))
 # model.eval()
 
-model = torch.load('/Users/puayhiang/dev/music-generation/model/model/trained_model.h5', map_location='cpu')
-model.eval()
+
 
 def decoder(filename, time_coefficient):
 
-    filedir = './output/'
+    filedir = './model/output/'
 
     notetxt = filedir + filename
 
@@ -135,9 +134,9 @@ def decoder(filename, time_coefficient):
 
             try: 
                 if(time_offset in timeNote):
-                  timeNote[time_offset].append(['v',int(score[i][1:]),duration]) 
+                    timeNote[time_offset].append([score[i][0],int(score[i][1:]),duration]) 
                 else:
-                  timeNote[time_offset] = [['v',int(score[i][1:]),duration]]
+                    timeNote[time_offset] = [[score[i][0],int(score[i][1:]),duration]]
 
                 new_note=music21.note.Note(int(score[i][1:])+note_offset)    
                 new_note.duration = music21.duration.Duration(duration*speed)
@@ -169,16 +168,20 @@ def decoder(filename, time_coefficient):
     # merge both stream objects into a single stream of 2 instruments
     note_stream = music21.stream.Stream([piano_stream, violin_stream])
 
-    note_stream.write('midi', fp="./output/"+filename[:-4]+".mid")
+    note_stream.write('midi', fp="./model/output/"+filename[:-4]+".mid")
 
-    FluidSynth("./dataset/font.sf2", 16000).midi_to_audio('./output.mid', './output.wav')
+    FluidSynth("./model/dataset/font.sf2", 16000).midi_to_audio('./model/output/output.mid', './model/output/output.wav')
 
     print("Done! Decoded midi file saved to 'content/'")
     return timeNote
 
 def predictApp(seed_prompt = "p25",tokens_to_generate = 512, time_coefficient = 4, top_k_coefficient = 12):
 
-    select_training_dataset_file = "./dataset/notewise_chamber.txt"
+    model = torch.load('/home/puayhiang/dev/music-generation/model/model/trained_model.h5', map_location='cpu')
+
+    model.eval()
+
+    select_training_dataset_file = "./model/dataset/notewise_chamber.txt"
 
     # replace with any text file containing full set of data
     MIDI_data = select_training_dataset_file
@@ -193,7 +196,7 @@ def predictApp(seed_prompt = "p25",tokens_to_generate = 512, time_coefficient = 
     word2int = dict(zip(words, list(range(n))))
     int2word = dict(zip(list(range(n)), words))
 
-    with open("./output/output.txt", "w") as outfile:
+    with open("./model/output/output.txt", "w") as outfile:
         outfile.write(' '.join([int2word[int_] for int_ in model.predict(seed_seq=seed_prompt, pred_len=tokens_to_generate, top_k=top_k_coefficient, int2word=int2word, word2int=word2int)]))
     
     return decoder('output.txt', time_coefficient)
@@ -201,12 +204,3 @@ def predictApp(seed_prompt = "p25",tokens_to_generate = 512, time_coefficient = 
 if __name__ == "__main__":
 
     predictApp()
-    # seed_prompt = "p25"
-    # tokens_to_generate = 512
-    # time_coefficient = 4
-    # top_k_coefficient = 12
-
-    # with open("./dataset/output.txt", "w") as outfile:
-    #     outfile.write(' '.join([int2word[int_] for int_ in model.predict(seed_seq=seed_prompt, pred_len=tokens_to_generate, top_k=top_k_coefficient)]))
-    
-    # decoder('output.txt')

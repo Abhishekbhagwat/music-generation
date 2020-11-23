@@ -87,7 +87,7 @@ class WordLSTM(nn.ModuleList):
         return (torch.zeros(1, self.hidden_dim).to('cpu'),
                 torch.zeros(1, self.hidden_dim).to('cpu'))
     
-    def predict(self, seed_seq, top_k=5, pred_len=128):
+    def predict(self, seed_seq, top_k=5, pred_len=128, int2word=[], word2int=[]):
         """
             1. seed_seq: seed string sequence for prediction (prompt)
             2. top_k: top k words to sample prediction from
