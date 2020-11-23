@@ -1,0 +1,14 @@
+torch
+streamlit
+pyknon
+pretty_midi
+pypianoroll
+mir_eval
+fluidsynth
+midi2audio
+librosa
+tqdm
+dill
+music21
+keras
+tensorflow
