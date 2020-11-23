@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import time
 import pretty_midi
 from midi2audio import FluidSynth
-import librosa
+# import librosa
 import numpy as np
 import pretty_midi
 import pypianoroll
@@ -32,9 +32,9 @@ from model.model import WordLSTM
 model = torch.load('/Users/puayhiang/dev/music-generation/model/model/trained_model.h5', map_location='cpu')
 model.eval()
 
-def decoder(filename):
-    
-    filedir = '/dataset/'
+def decoder(filename, time_coefficient):
+
+    filedir = './output/'
 
     notetxt = filedir + filename
 
@@ -43,12 +43,21 @@ def decoder(filename):
 
     score_note = notestring.split(" ")
 
+    # from train
+    sample_freq_variable = 12 
+    note_range_variable = 62
+    note_offset_variable = 33
+    number_of_instruments = 2
+    chamber_option = True
+
     # define some parameters (from encoding script)
     sample_freq=sample_freq_variable
     note_range=note_range_variable
     note_offset=note_offset_variable
     chamber=chamber_option
     numInstruments=number_of_instruments
+
+    
 
     # define variables and lists needed for chord decoding
     speed=time_coefficient/sample_freq
@@ -160,7 +169,7 @@ def decoder(filename):
     # merge both stream objects into a single stream of 2 instruments
     note_stream = music21.stream.Stream([piano_stream, violin_stream])
 
-    note_stream.write('midi', fp="/output/"+filename[:-4]+".mid")
+    note_stream.write('midi', fp="./output/"+filename[:-4]+".mid")
 
     FluidSynth("./dataset/font.sf2", 16000).midi_to_audio('./output.mid', './output.wav')
 
@@ -168,19 +177,36 @@ def decoder(filename):
     return timeNote
 
 def predictApp(seed_prompt = "p25",tokens_to_generate = 512, time_coefficient = 4, top_k_coefficient = 12):
-    with open("../dataset/output.txt", "w") as outfile:
-        outfile.write(' '.join([int2word[int_] for int_ in model.predict(seed_seq=seed_prompt, pred_len=tokens_to_generate, top_k=top_k_coefficient)]))
+
+    select_training_dataset_file = "./dataset/notewise_chamber.txt"
+
+    # replace with any text file containing full set of data
+    MIDI_data = select_training_dataset_file
+
+    with open(MIDI_data, 'r') as file:
+        text = file.read()
+
+    # get vocabulary set
+    words = sorted(tuple(set(text.split())))
+    n = len(words)
+
+    word2int = dict(zip(words, list(range(n))))
+    int2word = dict(zip(list(range(n)), words))
+
+    with open("./output/output.txt", "w") as outfile:
+        outfile.write(' '.join([int2word[int_] for int_ in model.predict(seed_seq=seed_prompt, pred_len=tokens_to_generate, top_k=top_k_coefficient, int2word=int2word, word2int=word2int)]))
     
-    return decoder('output.txt')
+    return decoder('output.txt', time_coefficient)
 
 if __name__ == "__main__":
 
-    seed_prompt = "p25"
-    tokens_to_generate = 512
-    time_coefficient = 4
-    top_k_coefficient = 12
+    predictApp()
+    # seed_prompt = "p25"
+    # tokens_to_generate = 512
+    # time_coefficient = 4
+    # top_k_coefficient = 12
 
-    with open("../dataset/output.txt", "w") as outfile:
-        outfile.write(' '.join([int2word[int_] for int_ in model.predict(seed_seq=seed_prompt, pred_len=tokens_to_generate, top_k=top_k_coefficient)]))
+    # with open("./dataset/output.txt", "w") as outfile:
+    #     outfile.write(' '.join([int2word[int_] for int_ in model.predict(seed_seq=seed_prompt, pred_len=tokens_to_generate, top_k=top_k_coefficient)]))
     
-    decoder('output.txt')
+    # decoder('output.txt')
