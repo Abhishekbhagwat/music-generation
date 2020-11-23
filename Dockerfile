@@ -3,6 +3,7 @@ COPY . /app
 WORKDIR /app
 RUN pip install -r requirements.txt
 WORKDIR /app/model/dataset
+RUN apt-get update -y && apt-get install -y unzip
 RUN bash download_dataset.sh
 EXPOSE 80
 WORKDIR /app
