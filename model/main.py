@@ -172,7 +172,7 @@ def decoder(filename, time_coefficient):
 def predictApp(seed_prompt = "p25",tokens_to_generate = 512, time_coefficient = 4, top_k_coefficient = 12):
 
     # update this with your directory
-    model = torch.load('/home/puayhiang/dev/music-generation/model/model/trained_model.h5', map_location='cpu')
+    model = torch.load('./model/model/trained_model.h5', map_location='cpu')
 
     model.eval()
 
