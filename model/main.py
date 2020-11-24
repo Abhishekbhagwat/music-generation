@@ -25,6 +25,12 @@ import random
 import os, argparse
 from model.model import WordLSTM
 
+# model = WordLSTM(sequence_len=256, vocab_size=100, hidden_dim=256, batch_size=1024, device='cpu') #*args, **kwargs
+# model.load_state_dict(torch.load('/Users/puayhiang/dev/music-generation/model/model/trained_model.h5', map_location='cpu'))
+# model.eval()
+
+
+
 def decoder(filename, time_coefficient):
 
     filedir = './model/output/'
@@ -171,7 +177,6 @@ def decoder(filename, time_coefficient):
 
 def predictApp(seed_prompt = "p25",tokens_to_generate = 512, time_coefficient = 4, top_k_coefficient = 12):
 
-    # update this with your directory
     model = torch.load('./model/model/trained_model.h5', map_location='cpu')
 
     model.eval()
