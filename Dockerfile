@@ -6,7 +6,7 @@ WORKDIR /app/model/dataset
 RUN apt-get update -y && apt-get install -y unzip
 RUN bash download_dataset.sh
 WORKDIR /app/frontend
-RUN agt-get update -y && apt-get install -y npm
+RUN apt-get update -y && apt-get install -y npm
 RUN npm install
 RUN npm run build
 EXPOSE 80
